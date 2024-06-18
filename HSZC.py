@@ -330,6 +330,10 @@ def pattern_odds_catch_deep(p_flee_watching, p_flee_eating, p_catch_baited, p_ca
 
 
 def pretty_outputs(catch_rate=30, flee_rate=125, name='CHANSEY'):
+    print()
+    print()
+    print()
+    print()
     print("**OUTPUT FOR " + name + "**")
     print("Base catch rate: " + str(catch_rate))
     factor = get_catch_factor(catch_rate, 0, 0)
@@ -344,18 +348,24 @@ def pretty_outputs(catch_rate=30, flee_rate=125, name='CHANSEY'):
     print("Odds of capture with balls only: " +
           str(round((odds_b[0] * 100), 2)) + "%")
     print()
-    print("Odds of capture with random nature & optimal pattern: " +
-          str(round((hsz2.get_catch_odds(catch_rate, -1, 1, 1) * 100), 2)) + "%")    
-    print("Odds of capture with spicy table & optimal pattern: " +
+    print("Odds of capture with random nature: " +
+          str(round((hsz2.get_catch_odds(catch_rate, -1, 1, 1) * 100), 3)) + "%")
+    print("Odds of capture with Synchronizer: " +
+          str(round((hsz2.get_catch_odds(catch_rate, "SYNC_ONLY", 0, 1) * 100), 2)) + "%")     
+    print("Odds of capture with spicy table: " +
           str(round((hsz2.get_catch_odds(catch_rate, 0, 1, 1) * 100), 2)) + "%")
-    print("Odds of capture with sour table & optimal pattern: " +
+    print("Odds of capture with sour table: " +
           str(round((hsz2.get_catch_odds(catch_rate, 1, 0, 1) * 100), 2)) + "%")
-    print("Odds of capture with sweet table & optimal pattern: " +
+    print("Odds of capture with sweet table: " +
           str(round((hsz2.get_catch_odds(catch_rate, 2, 0, 1) * 100), 2)) + "%")
-    print("Odds of capture with dry table & optimal pattern: " +
+    print("Odds of capture with dry table: " +
           str(round((hsz2.get_catch_odds(catch_rate, 3, 0, 1) * 100), 2)) + "%")
-    print("Odds of capture with bitter table & optimal pattern: " +
+    print("Odds of capture with bitter table: " +
           str(round((hsz2.get_catch_odds(catch_rate, 4, 0, 1) * 100), 2)) + "%")   
+    print("Odds of capture with Complex Block: " +
+          str(round((hsz2.get_catch_odds(catch_rate, "COMPLEX", 0, 1) * 100), 2)) + "%")
+    print("Odds of capture with Complex Block & Synchronize: " +
+          str(round((hsz2.get_catch_odds(catch_rate, "SYNC_COMPLEX", 0, 1) * 100), 2)) + "%")
     print()
 
 

@@ -4,6 +4,11 @@ import pprand
 
 natures = ['Hard', 'Lonely', 'Brave', 'Adamant', 'Naughty', 'Bold', 'Docile', 'Relaxed', 'Impish', 'Lax', 'Timid', 'Hasty', 'Serious', 'Jolly', 'Naive', 'Modest', 'Mild', 'Quiet', 'Bashful', 'Rash', 'Calm', 'Gentle', 'Sassy', 'Careful', 'Quirky']
 
+
+odds_of_trigger = pprand.pp_rand_variance(100, 0, 79)
+odds_of_flee = pprand.pp_rand_variance(100, 0, 14)
+pprand.enablePrint()
+
 trigger_flavs = []
 trigger_flavs.append([0, 0.2200264, 0.2317442, 0.2556874, 0.292542])
 trigger_flavs.append([0.1400924, 0, 0.2246866, 0.2827856, 0.3524354])
@@ -16,9 +21,10 @@ def get_odds_of_rate(rate, current_flav, throw_flav):
     # IF current_flav = -1 never trigger the forced throw
     pprand.blockPrint()
     odds_of_trigger = pprand.pp_rand_variance(100, 0, 79)
+    pprand.enablePrint()
     if current_flav == -1:
         odds_of_trigger = 0
-    pprand.enablePrint()
+
     rand_odds_of_flav_yum = 4/25 * (1 - odds_of_trigger)
     rand_odds_of_flav_yuck = 4/25 * (1 - odds_of_trigger)
     rand_odds_of_flav_fine = (25 - 8)/25 * (1 - odds_of_trigger)
@@ -26,6 +32,8 @@ def get_odds_of_rate(rate, current_flav, throw_flav):
     if current_flav >= 0 and current_flav != throw_flav:
         trigger_odds_of_flav_yuck = odds_of_trigger * (trigger_flavs[current_flav][throw_flav])
         trigger_odds_of_flav_fine = odds_of_trigger * (1 - trigger_flavs[current_flav][throw_flav])
+        #trigger_odds_of_flav_yuck = odds_of_trigger * (0)
+        #trigger_odds_of_flav_fine = odds_of_trigger * (1)        
         trigger_odds_of_flav_yum = 0
     elif current_flav >=0 :
         trigger_odds_of_flav_yuck = 0
@@ -43,8 +51,9 @@ def get_odds_of_rate(rate, current_flav, throw_flav):
         return rand_odds_of_flav_yuck + trigger_odds_of_flav_yuck
 
 def get_odds_yum_2(current_flav, throw_flav):
+    global odds_of_flee
     # GET ODDS OF FAILING ROLL 1 (IGNORED)
-    fail_odds = get_odds_of_rate(3, current_flav, throw_flav) * 0.85    
+    fail_odds = get_odds_of_rate(3, current_flav, throw_flav) * (1 - odds_of_flee)    
     if current_flav == -1:
         suc_odds = 1/4
         f_odds = 3/4
@@ -54,20 +63,49 @@ def get_odds_yum_2(current_flav, throw_flav):
         f_odds = 1 - suc_odds
     return (suc_odds * fail_odds, f_odds * fail_odds)
 
-def get_catch_odds(cr, current_flav, throw_flav, extra_throw = 0):
-    odds_of_0 = get_odds_of_rate(0, current_flav, throw_flav) * 0.85
-    odds_of_1 = get_odds_of_rate(1, current_flav, throw_flav) * 0.85
-    odds_of_3 = get_odds_of_rate(3, current_flav, throw_flav) * 0.85
+def get_catch_odds(cr, current_flav, throw_flav=0, extra_throw=0):
+    pprand.blockPrint()
+    odds_of_trigger = pprand.pp_rand_variance(100, 0, 79)
+    odds_of_flee = 1 - pprand.pp_rand_variance(100, 0, 14)
+    pprand.enablePrint()    
+    if current_flav == "SYNC_ONLY":
+        odds_of_0 = (0.5 + 0.5 * (25 - 8)/25) * odds_of_flee
+        odds_of_1 = (0.5 * (1-((25 - 4)/25))) * odds_of_flee
+        odds_of_3 = (0.5 * (1-((25 - 4)/25))) * odds_of_flee
+        if extra_throw == 1:
+            odds_of_0 += (0.5 * (1-((25 - 4)/25))) * odds_of_flee * 1/4 * odds_of_flee
+            odds_of_1 += (0.5 * (1-((25 - 4)/25))) * odds_of_flee * 3/4 * odds_of_flee
+            odds_of_3 = 0
+    elif current_flav == "COMPLEX":
+        # 0 = NEUTRAL, 1 = LIKED 3 = DISLIKED
+        odds_of_0 = (odds_of_trigger + (1-odds_of_trigger) * (25 - 8)/25) * odds_of_flee
+        odds_of_1 = ((1-odds_of_trigger) * (1-((25 - 4)/25))) * odds_of_flee
+        odds_of_3 = ((1-odds_of_trigger) * (1-((25 - 4)/25))) * odds_of_flee
+        if extra_throw == 1:
+            odds_of_0 += ((1-odds_of_trigger) * (1-((25 - 4)/25))) * odds_of_flee * 1/4 * odds_of_flee
+            odds_of_1 += ((1-odds_of_trigger) * (1-((25 - 4)/25))) * odds_of_flee * 3/4 * odds_of_flee
+            odds_of_3 = 0        
+    elif current_flav == "SYNC_COMPLEX":
+        odds_of_0 = (odds_of_trigger + (1-odds_of_trigger) * 0.5 + (1-odds_of_trigger) * 0.5 * (25 - 8)/25) * 0.85
+        odds_of_1 = ((1-odds_of_trigger) * 0.5 * (1-((25 - 4)/25))) * odds_of_flee
+        odds_of_3 = ((1-odds_of_trigger) * 0.5 * (1-((25 - 4)/25))) * odds_of_flee
+        if extra_throw == 1:
+            odds_of_0 += ((1-odds_of_trigger) * 0.5 * (1-((25 - 4)/25))) * odds_of_flee * 1/4 * odds_of_flee
+            odds_of_1 += ((1-odds_of_trigger) * 0.5 * (1-((25 - 4)/25))) * odds_of_flee * 3/4 * odds_of_flee
+            odds_of_3 = 0          
+    else:
+        odds_of_0 = get_odds_of_rate(0, current_flav, throw_flav) * odds_of_flee
+        odds_of_1 = get_odds_of_rate(1, current_flav, throw_flav) * odds_of_flee
+        odds_of_3 = get_odds_of_rate(3, current_flav, throw_flav) * odds_of_flee
     s0 = HSZC.pattern_odds_catch('LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL', 0, cr, 0)[0]
     s1 = HSZC.pattern_odds_catch('LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL', 0, cr, 1)[0]
     s3 = HSZC.pattern_odds_catch('LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL', 0, cr, 3)[0]
     odds_of_success_0 = s0 * odds_of_0
     odds_of_success_1 = s1 * odds_of_1
     odds_of_success_3 = s3 * odds_of_3
-    if extra_throw == 1:
-        odds_of_success_3 = get_odds_yum_2(current_flav, throw_flav)[0] * 0.85 *  s0 + get_odds_yum_2(current_flav, throw_flav)[1] * 0.85 * s1
+    if extra_throw == 1 and current_flav not in ("SYNC_ONLY", "COMPLEX", "SYNC_COMPLEX"):
+        odds_of_success_3 = get_odds_yum_2(current_flav, throw_flav)[0] * odds_of_flee *  s0 + get_odds_yum_2(current_flav, throw_flav)[1] * odds_of_flee * s1
     return odds_of_success_0 + odds_of_success_1 + odds_of_success_3
-
 def rand_table():
     tbl = []
     for i in range(0, 25):
@@ -98,6 +136,11 @@ def find_first(lst1, lst2):
     return (lowest)
 
 def check_variance(trials):
+    try:
+        os.remove("VARIANCE.txt")
+    except:
+        pass
+    f = open("VARIANCE.txt", "a")    
     lst = []
     checks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 200]
     for i in range(0,25):
@@ -107,6 +150,7 @@ def check_variance(trials):
             print(str(checks[0]) + "%")
             checks = checks[1:]
         rnd_tbl = rand_table()
+        print(rnd_tbl)
         for flav in flavors:
             curr = find_first(flav, rnd_tbl)
             var = lst[curr] + 1
